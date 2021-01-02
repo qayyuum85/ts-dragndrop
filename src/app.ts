@@ -13,7 +13,7 @@ class Project {
   ) {}
 }
 
-type Listener = (items: Project[])=>void
+type Listener = (items: Project[]) => void;
 
 class ProjectState {
   private listeners: Listener[] = [];
@@ -108,7 +108,13 @@ class ProjectList {
     this.assignedProjects = [];
 
     projectState.addListener((projects: Project[]) => {
-      this.assignedProjects = projects;
+      this.assignedProjects = projects.filter((p) => {
+        if (this.type === 'active') {
+          return p.status === ProjectStatus.ACTIVE;
+        }
+
+        return p.status === ProjectStatus.FINISHED;
+      });
       this.renderProject();
     });
 
@@ -128,6 +134,7 @@ class ProjectList {
 
   private renderProject() {
     const listEl = document.getElementById(`${this.type}-projects-list`) as HTMLUListElement;
+    listEl.innerHTML = '';
     for (const prjItem of this.assignedProjects) {
       const listItem = document.createElement('li');
       listItem.textContent = prjItem.title;
