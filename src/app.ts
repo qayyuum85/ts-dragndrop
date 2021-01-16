@@ -35,7 +35,7 @@ class State<T> {
 }
 
 class ProjectState extends State<Project> {
-  private projects: any[] = [];
+  private projects: Project[] = [];
   private static instance: ProjectState;
 
   private constructor() {
@@ -55,6 +55,18 @@ class ProjectState extends State<Project> {
     const newProject = new Project(Math.random().toString(), title, description, numOfPeople, ProjectStatus.ACTIVE);
 
     this.projects.push(newProject);
+    this.updateProject();
+  }
+
+  moveProject(projectId: string, newStatus: ProjectStatus) {
+    const project = this.projects.find((prj) => prj.id === projectId);
+    if (project && project.status !== newStatus) {
+      project.status = newStatus;
+      this.updateProject();
+    }
+  }
+
+  private updateProject() {
     for (const listenerFn of this.listeners) {
       listenerFn(this.projects.slice());
     }
@@ -162,8 +174,8 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> implements 
   }
 
   configure() {
-    addEventListener('dragstart', this.dragStartHandler);
-    addEventListener('dragend', this.dragEndHandler);
+    this.element.addEventListener('dragstart', this.dragStartHandler);
+    this.element.addEventListener('dragend', this.dragEndHandler);
   }
 
   renderContent() {
@@ -192,8 +204,11 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Drag
       listEl.classList.add('droppable');
     }
   }
+
+  @autobind
   dropHandler(event: DragEvent) {
-    console.log(event.dataTransfer!.getData('text/plain'));
+    const prjId = event.dataTransfer!.getData('text/plain');
+    projectState.moveProject(prjId, this.type === 'active' ? ProjectStatus.ACTIVE : ProjectStatus.FINISHED);
   }
 
   @autobind
@@ -204,7 +219,6 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Drag
 
   renderContent() {
     const listId = `${this.type}-projects-list`;
-    ``;
     this.element.querySelector('ul')!.id = listId;
     this.element.querySelector('h2')!.textContent = `${this.type.toUpperCase()} PROJECTS`;
   }
