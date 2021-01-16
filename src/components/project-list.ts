@@ -1,5 +1,4 @@
 /// <reference path="./base-component.ts" />
-
 namespace App {
   export class ProjectList extends Component<HTMLDivElement, HTMLElement> implements DragTarget {
     assignedProjects: Project[];
